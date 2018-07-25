@@ -2,6 +2,13 @@ camel:
   springboot:
     # The Camel context name
     name: fuse-slow-backend
+  # configure hystrix
+  # when we have more than 5 requests per 10 seconds that 50%+ fails
+  # then open circuit and call fallback immediately
+  hystrix:
+    circuit-breaker-request-volume-threshold: 5
+    circuit-breaker-error-threshold-percentage: 50
+    metrics-rolling-percentile-window-in-milliseconds: 1000 
 
 # Binding health checks to a different port
 management:
@@ -56,15 +63,5 @@ activemq:
     max:
       connections: 8
 
-
-# configure hystrix
-# when we have more than 5 requests per 10 seconds that 50%+ fails
-# then open circuit and call fallback immediately
-camel:
-  hystrix:
-    circuit-breaker-request-volume-threshold: 5
-    circuit-breaker-error-threshold-percentage: 50
-    metrics-rolling-percentile-window-in-milliseconds: 1000 
-
 # hystrix logging
-#logging.level.org.apache.camel.component.hystrix.processor=DEBUG
+# logging.level.org.apache.camel.component.hystrix.processor=DEBUG

@@ -28,4 +28,5 @@ public class TransactionSetup {
 		propagationRequired.setPropagationBehaviorName("PROPAGATION_REQUIRED");
 		return propagationRequired;
 	}
+	
 }

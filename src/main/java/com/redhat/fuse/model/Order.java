@@ -1,6 +1,8 @@
 package com.redhat.fuse.model;
 
-public class Order {
+import java.io.Serializable;
+
+public class Order implements Serializable{
 
     private int id;
     private String item;

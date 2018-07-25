@@ -1,6 +1,8 @@
 package com.redhat.fuse.route;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.HystrixConfigurationDefinition;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,31 +32,29 @@ public class MessagingRoute extends RouteBuilder {
 		// Redelivery Policy
 		errorHandler(defaultErrorHandler().redeliveryDelay(relideveryDelay).maximumRedeliveries(maxAttempt));
 		
-		HystrixConfigurationDefinition configuration = new HystrixConfigurationDefinition();
-		configuration.circuitBreakerRequestVolumeThreshold(3);
-		configuration.executionTimeoutInMilliseconds(1000);
-		
 
 		rest("/backend")
 			.get("/").description("Backend mock service")
 			.route()
+			.log("Request received on backend side")
 			.setBody(constant("Backend system answer"));
 
 		rest("/orders")
 			.post("/").type(Order.class).description("Create a new Book")
 				.route().routeId("insert-order").tracing()
-				.wireTap("direct:send-to-backend")
+				.wireTap("direct:create-order")
 				.setBody(constant("Your request was sent, thank you... Your confirmation will be sent by email."));
-		
-		from("direct:send-to-backend")
-			.log("send-to-backend body: ${body}")
+
+		// mock a order creation
+		from("direct:create-order")
+			.log("Sending Order to AMQ broker: ${body}")
 			.to(ExchangePattern.InOnly, "activemq:queue:backend");
 
 		from("activemq:queue:backend")
-			.log("Message received from the broker: ${body}")
-			.process(new RestToSoapProcessor())
+			.transacted()
+			.log("Message received from the AMQ broker: ${body}")
 			.hystrix()
-				.to("http://localhost:8080/api/backend") // This is a legacy and 'slow' system
+			.to("http4://localhost:8080/api/backend") // This is a legacy and 'slow' system
 			.onFallback()
 				.log("entrei no fallback")
 			.end()

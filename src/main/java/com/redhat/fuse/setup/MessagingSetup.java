@@ -1,33 +1,34 @@
 package com.redhat.fuse.setup;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.camel.component.ActiveMQComponent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component
+@Configuration
 public class MessagingSetup {
 	
-	// @Value("${broker.host}")
-	// private String brokerUrl;
+	@Value("${activemq.broker.url}")
+	private String brokerUrl;
 
-	// @Value("${broker.username}")
-	// private String userName;
+	@Value("${activemq.broker.username}")
+	private String userName;
 
-	// @Value("${broker.password}")
-	// private String password;
+	@Value("${activemq.broker.password}")
+	private String password;
 
-	@Bean
-	public ActiveMQConnectionFactory coreConnectionFactory() throws Exception {
-		final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
-	
-		factory.setBrokerURL("vm://localhost");
-		// factory.setUserName(userName.trim());
-		// factory.setPassword(password.trim());
+	@Bean(name = "activemq")
+    public ActiveMQComponent createComponent(ActiveMQConnectionFactory factory) {
+		ActiveMQComponent activeMQComponent = new ActiveMQComponent();
+		
+		factory.setBrokerURL(brokerUrl);
+		factory.setUserName(userName);
+		factory.setPassword(password);
 
 		factory.setTrustAllPackages(true);
-		
-		return factory;
-	}    
+        activeMQComponent.setConnectionFactory(factory);
+        return activeMQComponent;
+    }
 	
 }
