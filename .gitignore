@@ -1,0 +1,10 @@
+.DS_Store
+/target/
+activemq-data
+/.apt_generated/
+log-camel-lsp.out
+.classpath
+.project
+.settings
+.factorypath
+transaction-logs

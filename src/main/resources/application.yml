@@ -1,0 +1,70 @@
+camel:
+  springboot:
+    # The Camel context name
+    name: fuse-slow-backend
+
+# Binding health checks to a different port
+management:
+  port: 8081
+  
+server:
+  port: 8080
+
+# disable all management enpoints except health
+endpoints:
+  enabled: false
+  health:
+    enabled: true
+
+apiContext: /api
+
+apidoc:
+  host: 0.0.0.0
+  port: ${server.port}
+
+smtp:
+  host: 127.0.0.1
+  port: 2525
+  to: hodrigohamalho@gmail.com
+  from: rramalho@redhat.com
+  
+redelivery:
+  delay: 10000
+  maxAttempt: -1
+
+
+# The name of the service hosting the ActiveMQ broker or message gateway
+# Can be customized using the 'ACTIVEMQ_SERVICE_NAME' variable to use a different broker.
+activemq:
+  service:
+    name: activemq
+# The following properties can be customized using the 'ACTIVEMQ_SERVICE_HOST' and 'ACTIVEMQ_SERVICE_PORT' environment variables.
+# This is indeed done automatically by Kubernetes when the application is deployed in a namespace containing an instance of ActiveMQ named 'activemq'.
+# The service defaults to localhost. You need to change these properties for development purposes only.
+    host: 127.0.0.1
+    port: 61616
+  broker:
+    # url: tcp://${${activemq.service.name}.service.host}:${${activemq.service.name}.service.port}
+      url: vm://localhost
+# If required, you can set the broker credentials using environment variables.
+# Variable names are 'ACTIVEMQ_BROKER_USERNAME' and 'ACTIVEMQ_BROKER_PASSWORD'.
+      username: redhat
+      password: redhat
+  concurrent:
+    consumers: 10
+  pool:
+    max:
+      connections: 8
+
+
+# configure hystrix
+# when we have more than 5 requests per 10 seconds that 50%+ fails
+# then open circuit and call fallback immediately
+camel:
+  hystrix:
+    circuit-breaker-request-volume-threshold: 5
+    circuit-breaker-error-threshold-percentage: 50
+    metrics-rolling-percentile-window-in-milliseconds: 1000 
+
+# hystrix logging
+#logging.level.org.apache.camel.component.hystrix.processor=DEBUG
