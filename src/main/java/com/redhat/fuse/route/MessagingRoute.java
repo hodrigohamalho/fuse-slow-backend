@@ -32,13 +32,6 @@ public class MessagingRoute extends RouteBuilder {
 		// Redelivery Policy
 		errorHandler(defaultErrorHandler().redeliveryDelay(relideveryDelay).maximumRedeliveries(maxAttempt));
 		
-
-		rest("/backend")
-			.get("/").description("Backend mock service")
-			.route()
-			.log("Request received on backend side")
-			.setBody(constant("Backend system answer"));
-
 		rest("/orders")
 			.post("/").type(Order.class).description("Create a new Book")
 				.route().routeId("insert-order").tracing()
@@ -54,9 +47,11 @@ public class MessagingRoute extends RouteBuilder {
 		from("activemq:queue:backend")
 			.log("Message received from the AMQ broker: ${body}")
 			// .hystrix()
-				.to("http4://localhost:8080/api/backend") // This is a legacy and 'slow' system
+				.removeHeaders("*")
+				.setBody(constant(null))
+				.to("http://localhost:8080/api/backend") // This is a legacy and 'slow' system
 			// .onFallback()
-				.log("entrei no fallback")
+			// 	.log("entrei no fallback")
 			// .end()
 			.log("Retorno: ${body}")
 			.to(ExchangePattern.InOnly, "activemq:queue:send-email");
