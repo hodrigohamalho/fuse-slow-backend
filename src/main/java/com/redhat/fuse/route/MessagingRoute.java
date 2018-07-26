@@ -47,17 +47,17 @@ public class MessagingRoute extends RouteBuilder {
 
 		// mock a order creation
 		from("direct:create-order")
+			.transacted()
 			.log("Sending Order to AMQ broker: ${body}")
 			.to(ExchangePattern.InOnly, "activemq:queue:backend");
 
 		from("activemq:queue:backend")
-			.transacted()
 			.log("Message received from the AMQ broker: ${body}")
-			.hystrix()
-			.to("http4://localhost:8080/api/backend") // This is a legacy and 'slow' system
-			.onFallback()
+			// .hystrix()
+				.to("http4://localhost:8080/api/backend") // This is a legacy and 'slow' system
+			// .onFallback()
 				.log("entrei no fallback")
-			.end()
+			// .end()
 			.log("Retorno: ${body}")
 			.to(ExchangePattern.InOnly, "activemq:queue:send-email");
 
